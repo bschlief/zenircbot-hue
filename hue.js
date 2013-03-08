@@ -8,7 +8,7 @@ var api = null;
 var ZenIRCBot = require('zenircbot-api').ZenIRCBot;
 var zen = new ZenIRCBot();
 var sub = zen.get_redis_client();
-var sourceUrl = 'https://github.com/bschlief/zenircbot';
+var sourceUrl = 'https://github.com/bschlief/zenircbot-hue';
 
 zen.register_commands(
     'hue.js',
@@ -25,7 +25,7 @@ zen.register_commands(
         name: 'hue clear register',
         description: 'clear out stored registration value locally'
     }, {
-        name: 'hue locateBridges',
+        name: 'hue locate',
         description: 'locates bridges and displays them'
     }, {
         name: 'hue apply [1, 2, 3] lightState.create().on.white(200,50)',
@@ -62,7 +62,7 @@ sub.on('message', function (channel, message) {
 
     storeHueConfig = function (config) {
         zen.send_privmsg(msg.data.channel, msg.data.sender + ": writing to local config in hue.json");
-        fs.writeFile('./hue.json', JSON.stringify(config, null, 4), function (err) {
+        fs.writeFile('./zenircbot-hue/hue.json', JSON.stringify(config, null, 4), function (err) {
             if (err) {
                 console.log("Error writing hue.json:" + err);
             }
@@ -76,12 +76,14 @@ sub.on('message', function (channel, message) {
 
     getLightArrayFromMessage = function (str) {
         var lightArray, arrayMatch, arrayString, iterable, i;
+        
         lightArray = [];
-        arrayMatch = str.match(/array=\((\d+(,\d+)*)\)/);
+        arrayMatch = str.replace(" ","").match(/array=\((\d+(,\d+)*)\)/);
         if (!arrayMatch) {
             return [1, 2, 3];
         }
         arrayString = arrayMatch[1];
+         
         iterable = arrayString.replace("(", "").replace(")", "").split(",");
         for (i = 0; i < iterable.length; i += 1) {
             lightArray.push(iterable[i.valueOf()]);
@@ -115,7 +117,7 @@ sub.on('message', function (channel, message) {
 
     getTransitionTime = function (str) {
         var transitionMatch, transitionTime;
-        transitionMatch = str.match(/transition=(\d+)/);
+        transitionMatch = str.match(/time=(\d+)/);
         transitionTime = 1;
         if (transitionMatch) {
             transitionTime = transitionMatch[1];
@@ -125,7 +127,7 @@ sub.on('message', function (channel, message) {
 
     if (msg.version === 1) {
         if (msg.type === 'privmsg' && /hue/.test(msg.data.message)) {
-            if (/locateBridges/i.test(msg.data.message)) {
+            if (/locate/i.test(msg.data.message)) {
                 zen.send_privmsg(msg.data.channel, msg.data.sender + ": locating hue bridges...");
                 hue.locateBridges().then(function (bridge) {
                     zen.send_privmsg(msg.data.channel, msg.data.sender + ": bridges found -- " + JSON.stringify(bridge));
