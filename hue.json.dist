@@ -3,9 +3,10 @@
     "newUserName": "bschlief",
     "userDecription": "ZenIRCBot Hue Control",
     "groups": {
-        "@1": "(1)",
-        "@2": "(2)",
-        "@3": "(3)",
-        "@all": "(1,2,3)"
+        "defaultLights" : "(1,2,3)",
+        "1": "(1)",
+        "2": "(2)",
+        "3": "(3)",
+        "all": "(1,2,3)"
     }
 }

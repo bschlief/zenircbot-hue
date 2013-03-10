@@ -22,7 +22,7 @@ zen.register_commands(
         name: 'hue register',
         description: 'press the connect butten then send this to register the device with this software'
     }, {
-        name: 'hue clear register',
+        name: 'hue rm register',
         description: 'clear out stored registration value locally'
     }, {
         name: 'hue locate',
@@ -39,7 +39,7 @@ sub.on('message', function (channel, message) {
     var msg, displayResultConsole, displayResult, displayError, getDefaultLightArray,
         storeHueConfig, storeUsername, getLightArrayFromMessage, applyLightState,
         getTransitionTime, hslMatch, rgbMatch, whiteMatch, brightnessMatch,
-        state, transitionTime, who;
+        state, transitionTime, who, setGroup, rmGroup;
     msg = JSON.parse(message);
 
     displayResultConsole = function (result) {
@@ -74,17 +74,49 @@ sub.on('message', function (channel, message) {
         storeHueConfig(hueConfig);
     };
 
-    getLightArrayFromMessage = function (str) {
-        var lightArray, arrayMatch, arrayString, iterable, i;
-        
-        lightArray = [];
-        arrayMatch = str.replace(" ","").match(/array=\((\d+(,\d+)*)\)/);
-        if (!arrayMatch) {
-            return [1, 2, 3];
+    setGroup = function (str) {
+        var key, val, groupMatch;
+
+        groupMatch = str.match(/group (\w+)=(\(((\d)+,)*((\d)+)\))/);
+        if (groupMatch) {
+            key = groupMatch[1];
+            val = groupMatch[2];
+            console.log("Storing " + key + "=" + val + " in hue.json");
+            hueConfig.groups[key] = val;
         }
-        arrayString = arrayMatch[1];
+    };
+
+    rmGroup = function (str) {
+        var key, rmGroupMatch;
+
+        rmGroupMatch = str.match(/rm group (\w+)/);
+        if (rmGroupMatch) {
+            key = rmGroupMatch[1];
+            console.log("deleting: " + key);
+            delete hueConfig.groups[key];
+        }
+    };
+
+    getLightArrayFromMessage = function (str) {
+        var lightArray, arrayMatch, arrayString, iterable, i, atMatch;
+       
+        lightArray = [];
+
+        atMatch = str.match(/@(\w+)/);
+        if (atMatch) {
+            arrayString = hueConfig.groups[atMatch[1]];
+        }
+        else {
+            arrayMatch = str.replace(" ","").match(/array=\((\d+(,\d+)*)\)/);
+            if (!arrayMatch) {
+                arrayString = hueConfig.groups.defaultLights;
+            }
+            else {
+                arrayString = arrayMatch[1];
+            }
+        }
          
-        iterable = arrayString.replace("(", "").replace(")", "").split(",");
+        iterable = arrayString.replace(" ","").replace("(", "").replace(")", "").split(",");
         for (i = 0; i < iterable.length; i += 1) {
             lightArray.push(iterable[i.valueOf()]);
         }
@@ -94,9 +126,6 @@ sub.on('message', function (channel, message) {
     applyLightState = function (state, message) {
         var lightArray, i;
         lightArray = getLightArrayFromMessage(message);
-        if (!lightArray) {
-            lightArray = getDefaultLightArray();
-        }
 
         for (i = 0; i < lightArray.length; i += 1) {
             api.setLightState(lightArray[i], state)
@@ -118,10 +147,10 @@ sub.on('message', function (channel, message) {
     getTransitionTime = function (str) {
         var transitionMatch, transitionTime;
         transitionMatch = str.match(/time=(\d+)/);
-        transitionTime = 1;
-        if (transitionMatch) {
-            transitionTime = transitionMatch[1];
+        if (!transitionMatch) {
+            return 1;
         }
+        transitionTime = transitionMatch[1];
         return transitionTime;
     };
 
@@ -132,7 +161,15 @@ sub.on('message', function (channel, message) {
                 hue.locateBridges().then(function (bridge) {
                     zen.send_privmsg(msg.data.channel, msg.data.sender + ": bridges found -- " + JSON.stringify(bridge));
                 }).done();
-            } else if (/clear register/i.test(msg.data.message)) {
+            } else if (/rm group/i.test(msg.data.message)) {
+                rmGroup(msg.data.message);
+                storeHueConfig(hueConfig);
+            } else if (/ls group/i.test(msg.data.message)) {
+                zen.send_privmsg(msg.data.channel, msg.data.sender + ": groups are \n" + JSON.stringify(hueConfig.groups, null, 4));
+            } else if (/group/i.test(msg.data.message)) {
+                setGroup(msg.data.message);
+                storeHueConfig(hueConfig);
+            } else if (/rm register/i.test(msg.data.message)) {
                 delete hueConfig.username;
                 storeHueConfig(hueConfig);
             } else if (/register/i.test(msg.data.message)) {
