@@ -9,29 +9,32 @@ Installation & Configuration
 * cd to zenircbot/services
 * git clone http://github.com/bschlief/zenircbot-hue
 * edit the zenircbot/services/admin.json file to add "zenircbot-hue/hue.js" into services loaded.
-```
+<pre>
 { 
       "services": ["semantics.js", "zenircbot-hue/hue.js"] 
-} 
-```
+}
+</pre>
 * cd to zenircbot/services/zenircbot-hue
 * Copy the sample hue.json.dist to hue.json
 * Edit the hue.json file
-** put in the ip address of the Philips Hue bridge if you know it.  if you don't, start the services by running the 'node admin.js' command, then join the irc channel with the bot and send the command 'hue locate'.  You'll get a message like so:
-```
-23:20:37 < bschlief> hue locate 
-23:20:38 <@rms-bot> bschlief: locating hue bridges... 
-23:20:44 <@rms-bot> bschlief: bridges found -- [{"host":"192.168.1.135","port":"80"}] 
-```
-** Use that value to fill in the hostname, and stop and start the 'node admin.js' task again.
-** Note: You may also edit the groups lists in hue.json.  For example, if you have 6 lights, you'd want to change the "all" group to be like so:
+* put in the ip address of the Philips Hue bridge if you know it.  if you don't, start the services by running the 'node admin.js' command, then join the irc channel with the bot and send the command 'hue locate'.  You'll get a message like so:
+<pre>
+23:20:37 < bschlief> hue locate
+23:20:38 <@rms-bot> bschlief: locating hue bridges...
+23:20:44 <@rms-bot> bschlief: bridges found -- [{"host":"192.168.1.135","port":"80"}]
+</pre>
+* Use that value to fill in the hostname, and stop and start the 'node admin.js' task again.
+* Note: You may also edit the groups lists in hue.json.  For example, if you have 6 lights, you'd want to change the "all" group to be like so:
+<pre>
 "all": "(1,2,3,4,5,6)"
+</pre>
 * Press the connect button the hue bridge, then in the IRC channel, type 'hue register'.  The IRC Bot will create a 40 digit MD5 sum and install it in your hue.json under the key "username".  You should only have to do that once.
 * Try a few commands
-** hue #ff00ff time=10
-** hue #00ff00 time=2 @2
-** hue hsl=(230,65535,100) @all
-
+<pre>
+hue #ff00ff time=10
+hue #00ff00 time=2 @2
+hue hsl=(230,65535,100) @all
+</pre>
 
 Light Commands
 =============
