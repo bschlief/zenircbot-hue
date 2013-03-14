@@ -39,7 +39,7 @@ sub.on('message', function (channel, message) {
     var msg, displayResultConsole, displayResult, displayError, getDefaultLightArray,
         storeHueConfig, storeUsername, getLightArrayFromMessage, applyLightState,
         getTransitionTime, hslMatch, rgbMatch, whiteMatch, brightnessMatch,
-        state, transitionTime, who, setGroup, rmGroup, red, green, blue;
+        state, transitionTime, who, setGroup, rmGroup, red, green, blue, effectMatch;
     msg = JSON.parse(message);
 
     displayResultConsole = function (result) {
@@ -208,6 +208,9 @@ sub.on('message', function (channel, message) {
                 whiteMatch = msg.data.message.match(/white=\((\d+),(\d+)\)/);
                 transitionTime = getTransitionTime(msg.data.message);
                 applyLightState(lightState.create().white(whiteMatch[1], whiteMatch[2]).transition(transitionTime), msg.data.message);
+            } else if (/effect=/.test(msg.data.message)) {
+                effectMatch = msg.data.message.match(/effect=(\w+)/);
+                applyLightState(lightState.create().effect(effectMatch[1]), msg.data.message);
             } else if (/on/i.test(msg.data.message)) {
                 state = lightState.create().on();
                 applyLightState(state, msg.data.message);
