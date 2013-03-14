@@ -10,18 +10,18 @@ Installation & Configuration
 * git clone http://github.com/bschlief/zenircbot-hue
 * edit the zenircbot/services/admin.json file to add "zenircbot-hue/hue.js" into services loaded.
 ```
-{
-      "services": ["semantics.js", "zenircbot-hue/hue.js"]
-}
+{ 
+      "services": ["semantics.js", "zenircbot-hue/hue.js"] 
+} 
 ```
 * cd to zenircbot/services/zenircbot-hue
 * Copy the sample hue.json.dist to hue.json
 * Edit the hue.json file
 ** put in the ip address of the Philips Hue bridge if you know it.  if you don't, start the services by running the 'node admin.js' command, then join the irc channel with the bot and send the command 'hue locate'.  You'll get a message like so:
 ```
-23:20:37 < bschlief> hue locate
-23:20:38 <@rms-bot> bschlief: locating hue bridges...
-23:20:44 <@rms-bot> bschlief: bridges found -- [{"host":"192.168.1.135","port":"80"}]
+23:20:37 < bschlief> hue locate 
+23:20:38 <@rms-bot> bschlief: locating hue bridges... 
+23:20:44 <@rms-bot> bschlief: bridges found -- [{"host":"192.168.1.135","port":"80"}] 
 ```
 ** Use that value to fill in the hostname, and stop and start the 'node admin.js' task again.
 ** Note: You may also edit the groups lists in hue.json.  For example, if you have 6 lights, you'd want to change the "all" group to be like so:
