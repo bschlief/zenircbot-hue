@@ -6,7 +6,7 @@ Installation & Configuration
 ============
 * Install the Philips Hue lights and bridge
 * Install node.js
-* Install the glorious [ZenIRCBot](https://github.com/wraithan/zenircbot) software.
+* Install the glorious [ZenIRCBot](https://github.com/wraithan/zenircbot) software
 * Install the terrific [node-hue-api](https://github.com/peter-murray/node-hue-api) through npm
 <pre>
 npm install node-hue-api
@@ -46,12 +46,17 @@ Any ZenIRCBot that implements the hue service will have the following commands a
 * <code>on</code>
 * <code>off</code>
 * <code>white=(colorTemp, brightPercent)</code> where colorTemp is a value between 154 (cool) and 500 (warm) and brightPercent is 0 to 100
-* <code>brightness=(percent)</code> where percent is the brightness from 0 to 100
 * <code>hsl=(hue, saturation, brightPercent)</code> where hue is a value from 0 to 65534, saturation is a value from 0 to 254, and brightPercent is from 0 to 100
 * <code>rgb=(red, green, blue)</code> where red, green and blue are values from 0 to 255 - Not all colors can be created by the lights
-* <code>#RRGGBBY</code> where RR is red value in hex, GG is the green value in hex, and BB is the blue value in hex
-* <code>time=seconds</code> this can be used with <code>white</code>, <code>brightness</code>, <code>hsl</code>, <code>rgb</code>, <code>#RRGGBB</code> commands to apply a state over a number of seconds.  
+* <code>#RRGGBB</code> where RR is red value in hex, GG is the green value in hex, and BB is the blue value in hex
+* <code>brightness=(percent)</code> where percent is the brightness from 0 to 100
 * <code>effect=state</code> where state is either 'colorloop' or 'none'.  The 'colorloop' setting cycles through available colors at the current saturation and brightness.
+* <code>time=seconds</code> this can be used with <code>white</code>, <code>brightness</code>, <code>hsl</code>, <code>rgb</code>, <code>#RRGGBB</code> commands to apply a state over a number of seconds.  
 
-
-
+Groups
+==============
+The Philips Hue API does have a concept of groups, but the zenircbot-hue service doesn't make use of them.  Instead, you may define a group of lights to apply a state to, using a <code>array=(1,2,3)</code> syntax.
+* <code>ls groups</code> Lists any existing named groups
+* <code>group bryan=(1,3)</code> This would create a named group "bryan" which contains lights 1 and 3.  You can then send messages like <code>hue @bryan #ff0000 time=6</code> which would change the lights 1 and 3 to red over 6 seconds.
+* <code>rm group bryan</code>This would remove the named group "bryan".
+* Note that groups are saved in the hue.json file and may be modified there as well.
