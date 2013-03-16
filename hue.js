@@ -39,7 +39,8 @@ sub.on('message', function (channel, message) {
     var msg, displayResultConsole, displayResult, displayError, getDefaultLightArray,
         storeHueConfig, storeUsername, getLightArrayFromMessage, applyLightState,
         getTransitionTime, hslMatch, rgbMatch, whiteMatch, brightnessMatch,
-        state, transitionTime, who, setGroup, rmGroup, red, green, blue, effectMatch;
+        state, transitionTime, who, setGroup, rmGroup, red, green, blue, effectMatch, applyShiftState, shiftLightState;
+
     msg = JSON.parse(message);
 
     displayResultConsole = function (result) {
@@ -125,6 +126,11 @@ sub.on('message', function (channel, message) {
 
     applyLightState = function (state, message) {
         var lightArray, i;
+
+        if (/shift/i.test(message)) {
+            return applyShiftState(state, message);
+        }
+
         lightArray = getLightArrayFromMessage(message);
 
         for (i = 0; i < lightArray.length; i += 1) {
@@ -133,6 +139,52 @@ sub.on('message', function (channel, message) {
                 .fail(displayError)
                 .done();
         }
+    };
+
+    applyShiftState = function (state, message) {
+       var lightArray, newState;
+       lightArray = getLightArrayFromMessage(message);
+       shiftLightState(state, lightArray);
+    };
+
+    shiftLightState = function (state, array) {
+        var thisLightId = array.shift(),
+            handleResult = function(result) {
+                var nextState = result.state;
+
+                if (nextState.colormode == 'hs') {
+                    delete nextState.ct;
+                    delete nextState.xy
+                } 
+                else if (nextState.colormode == 'ct') {
+                    delete nextState.hue;
+                    delete nextState.sat;
+                    delete nextState.xy;
+                }
+                else if (nextState.colormode == 'xy') {
+                    delete nextState.hue;
+                    delete nextState.sat;
+                    delete nextState.ct;
+                }
+                delete nextState.colormode;
+                delete nextState.reachable;
+
+                api.setLightState(thisLightId, state)
+                    .then(displayResultConsole)
+                    .fail(displayError)
+                    .done();
+                if (array.length > 0) {
+                    shiftLightState(nextState, array);
+                }
+                else {
+                    console.log("finished applying shift to all lights.");
+                }
+            };
+
+        api.lightStatus(thisLightId)
+            .then(handleResult)
+            .fail(displayError)
+            .done();
     };
 
     if (hueConfig.username) {
