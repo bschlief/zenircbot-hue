@@ -57,11 +57,16 @@ Any ZenIRCBot that implements the hue service will have the following commands a
 hue @1 rgb=(255,0,0)                      #=> This command sets light 1 to red
 hue @2 rgb=(0,255,0)                      #=> This command sets light 2 to green
 hue @1 rgb=(0,0,255)                      #=> This command sets light 3 to blue
-hue rgb=(255,0,255) array=(1,2,3) shift   #=> this command sets light 1 (the first light in the array) to purple, 
-                                          #   then takes the vaue of red out of light 1, and shifts it into light 2,
-                                          #   then takes the value of green out of light 2 and shifts it into light 3.
-                                          #   if the array had been specified as (3,2,1) instead it would happen in 
-                                          #   the opposite order.  Without the shift modifier, all lights would be purple.
+hue rgb=(255,0,255) array=(1,2,3) shift   #=> This command sets light 1 (the first 
+                                              #   light in the array) to purple, then 
+                                              #   takes the vaue of red out of light 1, 
+                                              #   and shifts it into light 2, then takes 
+                                              #   the value of green out of light 2 and 
+                                              #   shifts it into light 3. If the array 
+                                              #   had been specified as (3,2,1) instead 
+                                              #   it would happen in the opposite order.  
+                                              #   Without the shift modifier, all lights 
+                                              #   would be purple.
 </pre>
 
 
