@@ -68,7 +68,7 @@ hue rgb=(255,0,255) array=(1,2,3) shift   #=> This command sets light 1 (the fir
                                               #   Without the shift modifier, all lights 
                                               #   would be purple.
 </pre>
-
+* <code>invert</code> will invert the color of any lights specified.  An inversion is defined as rotation of 180 degrees around the [hue](http://en.wikipedia.org/wiki/Hue) color circle.
 
 Groups
 ==============

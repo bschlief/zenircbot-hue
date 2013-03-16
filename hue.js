@@ -39,7 +39,8 @@ sub.on('message', function (channel, message) {
     var msg, displayResultConsole, displayResult, displayError, getDefaultLightArray,
         storeHueConfig, storeUsername, getLightArrayFromMessage, applyLightState,
         getTransitionTime, hslMatch, rgbMatch, whiteMatch, brightnessMatch,
-        state, transitionTime, who, setGroup, rmGroup, red, green, blue, effectMatch, applyShiftState, shiftLightState;
+        state, transitionTime, who, setGroup, rmGroup, red, green, blue, effectMatch,
+        applyShiftState, shiftLightState, applyInvert, invertState;
 
     msg = JSON.parse(message);
 
@@ -187,6 +188,34 @@ sub.on('message', function (channel, message) {
             .done();
     };
 
+    applyInvert = function (messsage) {
+        var lightArray = getLightArrayFromMessage(message);
+        invertState(lightArray);
+    };
+
+    invertState = function (array) {
+        var thisLightId = array.shift(),
+            handleResult = function(result) {
+                var invertedHue = ((result.state.hue + 32767) % 65535)/182;
+                var newState = lightState.create().hsl(invertedHue, result.state.sat, result.state.bri);
+                api.setLightState(thisLightId, newState)
+                    .then(displayResult)
+                    .fail(displayError)
+                    .done();
+                if (array.length > 0) {
+                    invertState(array);
+                }
+                else {
+                    console.log("finished applying invert to all lights");
+                }
+            };
+           
+        api.lightStatus(thisLightId)
+            .then(handleResult)
+            .fail(displayError)
+            .done();
+    };
+
     if (hueConfig.username) {
         api = new hue.HueApi(hueConfig.hostname, hueConfig.username);
     } else {
@@ -269,6 +298,8 @@ sub.on('message', function (channel, message) {
             } else if (/off/i.test(msg.data.message)) {
                 state = lightState.create().off();
                 applyLightState(state, msg.data.message);
+            } else if (/invert/.test(msg.data.message)) {
+                applyInvert(msg.data.message);
             }
         } else if (msg.type === 'directed_privmsg') {
             who = ['whoareyou', 'who are you?', 'source'];
