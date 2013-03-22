@@ -199,7 +199,7 @@ sub.on('message', function (channel, message) {
                 var invertedHue = ((result.state.hue + 32767) % 65535)/182;
                 var newState = lightState.create().hsl(invertedHue, result.state.sat, result.state.bri);
                 api.setLightState(thisLightId, newState)
-                    .then(displayResult)
+                    .then(displayResultConsole)
                     .fail(displayError)
                     .done();
                 if (array.length > 0) {
