@@ -1,11 +1,13 @@
 'use strict';
 var fs = require('fs');
-var hue = require('node-hue-api').hue;
+var HueApi = require('node-hue-api').HueApi;
+var ZenIRCBot = require('zenircbot-api').ZenIRCBot;
+
+var hue = new HueApi();
 var lightState = require('node-hue-api').lightState;
 var hueConfig = require('./hue.json');
 var registerWarningIssued = false;
 var api = null;
-var ZenIRCBot = require('zenircbot-api').ZenIRCBot;
 var zen = new ZenIRCBot();
 var sub = zen.get_redis_client();
 var sourceUrl = 'https://github.com/bschlief/zenircbot-hue';
@@ -36,7 +38,7 @@ zen.register_commands(
 
 sub.subscribe('in');
 sub.on('message', function (channel, message) {
-    var msg, displayResultConsole, displayResult, displayError, getDefaultLightArray,
+    var msg, displayResultIRC, displayResult, displayError, getDefaultLightArray,
         storeHueConfig, storeUsername, getLightArrayFromMessage, applyLightState,
         getTransitionTime, hslMatch, rgbMatch, whiteMatch, brightnessMatch,
         state, transitionTime, who, setGroup, rmGroup, red, green, blue, effectMatch,
@@ -44,18 +46,17 @@ sub.on('message', function (channel, message) {
 
     msg = JSON.parse(message);
 
-    displayResultConsole = function (result) {
+    displayResult = function (result) {
         console.log("result = " + JSON.stringify(result, null, 2));
     };
 
-    displayResult = function (result) {
+    displayResultIRC = function (result) {
         zen.send_privmsg(msg.data.channel,
             msg.data.sender + ": result = " + JSON.stringify(result, null, 2));
     };
 
     displayError = function (result) {
-        zen.send_privmsg(msg.data.channel,
-            msg.data.sender + ": error = " + JSON.stringify(result, null, 2));
+        console.log("error = " + JSON.stringify(result, null, 2));
     };
 
     getDefaultLightArray = function () {
@@ -101,7 +102,7 @@ sub.on('message', function (channel, message) {
 
     getLightArrayFromMessage = function (str) {
         var lightArray, arrayMatch, arrayString, iterable, i, atMatch;
-       
+
         lightArray = [];
 
         atMatch = str.match(/@(\w+)/);
@@ -117,7 +118,7 @@ sub.on('message', function (channel, message) {
                 arrayString = arrayMatch[1];
             }
         }
-         
+
         iterable = arrayString.replace(" ","").replace("(", "").replace(")", "").split(",");
         for (i = 0; i < iterable.length; i += 1) {
             lightArray.push(iterable[i.valueOf()]);
@@ -136,7 +137,7 @@ sub.on('message', function (channel, message) {
 
         for (i = 0; i < lightArray.length; i += 1) {
             api.setLightState(lightArray[i], state)
-                .then(displayResultConsole)
+                .then(displayResult)
                 .fail(displayError)
                 .done();
         }
@@ -171,7 +172,7 @@ sub.on('message', function (channel, message) {
                 delete nextState.reachable;
 
                 api.setLightState(thisLightId, state)
-                    .then(displayResultConsole)
+                    .then(displayResult)
                     .fail(displayError)
                     .done();
                 if (array.length > 0) {
@@ -199,7 +200,7 @@ sub.on('message', function (channel, message) {
                 var invertedHue = ((result.state.hue + 32767) % 65535)/182;
                 var newState = lightState.create().hsl(invertedHue, result.state.sat, result.state.bri);
                 api.setLightState(thisLightId, newState)
-                    .then(displayResultConsole)
+                    .then(displayResult)
                     .fail(displayError)
                     .done();
                 if (array.length > 0) {
@@ -209,7 +210,7 @@ sub.on('message', function (channel, message) {
                     console.log("finished applying invert to all lights");
                 }
             };
-           
+
         api.lightStatus(thisLightId)
             .then(handleResult)
             .fail(displayError)
@@ -217,7 +218,7 @@ sub.on('message', function (channel, message) {
     };
 
     if (hueConfig.username) {
-        api = new hue.HueApi(hueConfig.hostname, hueConfig.username);
+        api = new HueApi(hueConfig.hostname, hueConfig.username);
     } else {
         if (!registerWarningIssued) {
             zen.send_privmsg(msg.data.channel, "hue.js disabled. press connect button then type 'hue register' in the irc window");
@@ -264,7 +265,7 @@ sub.on('message', function (channel, message) {
                         })
                         .fail(displayError)
                         .done();
-                    api = new hue.HueApi(hueConfig.hostname, hueConfig.username);
+                    api = new HueApi(hueConfig.hostname, hueConfig.username);
                 }
             } else if (/hsl=/.test(msg.data.message)) {
                 hslMatch = msg.data.message.match(/hsl=\((\d+),(\d+),(\d+)\)/);
