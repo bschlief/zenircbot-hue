@@ -301,6 +301,9 @@ sub.on('message', function (channel, message) {
                 applyLightState(state, msg.data.message);
             } else if (/invert/.test(msg.data.message)) {
                 applyInvert(msg.data.message);
+            } else if (/alert/.test(msg.data.message)) {
+                state = lightState.create().alert();
+                applyLightState(state, msg.data.message);
             }
         } else if (msg.type === 'directed_privmsg') {
             who = ['whoareyou', 'who are you?', 'source'];
